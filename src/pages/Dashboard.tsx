@@ -81,16 +81,15 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-6 space-y-6 fade-in">
-      {/* Header with working navigation */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Welcome back! Here's what's happening with your customers.</p>
-        </div>
-        <div className="flex space-x-3">
+    <div className="p-4 md:p-6 space-y-6 md:space-y-8 fade-in">
+      {/* Header with more space on mobile */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">Dashboard</h1>
+        
+        {/* Stack buttons vertically on mobile */}
+        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
           <Button 
-            className="gradient-bg hover:opacity-90"
+            className="gradient-bg hover:opacity-90 w-full sm:w-auto"
             onClick={() => navigate('/campaigns')}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -98,6 +97,7 @@ const Dashboard = () => {
           </Button>
           <Button 
             variant="outline"
+            className="w-full sm:w-auto"
             onClick={() => navigate('/ai-assistant')}
           >
             <MessageSquare className="w-4 h-4 mr-2" />
@@ -107,7 +107,7 @@ const Dashboard = () => {
       </div>
 
       {/* Key Metrics with real data */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-6">
         <Card className="hover-lift cursor-pointer" onClick={() => navigate('/customers')}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
@@ -172,7 +172,7 @@ const Dashboard = () => {
             <CardTitle>Customer Growth</CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={window.innerWidth < 768 ? 200 : 300}>
               <AreaChart data={stats?.customerGrowth || []}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                 <XAxis dataKey="month" />
@@ -218,20 +218,20 @@ const Dashboard = () => {
         <CardContent>
           <div className="space-y-4">
             {(stats?.recentActivities || []).map((activity) => (
-              <div key={activity.id} className="flex items-center space-x-4 p-3 rounded-lg bg-muted/50">
-                <div className={`w-2 h-2 rounded-full ${
+              <div key={activity.id} className="flex items-center space-x-3 md:space-x-4 p-3 rounded-lg bg-muted/50">
+                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                   activity.type === 'customer' ? 'bg-green-500' :
                   activity.type === 'campaign' ? 'bg-blue-500' :
                   activity.type === 'segment' ? 'bg-purple-500' :
                   'bg-orange-500'
                 }`} />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{activity.action}</p>
-                  <p className="text-xs text-muted-foreground">
+                <div className="flex-1 min-w-0"> {/* min-width: 0 prevents overflow */}
+                  <p className="text-sm font-medium truncate">{activity.action}</p>
+                  <p className="text-xs text-muted-foreground truncate">
                     {activity.customer || activity.recipients || activity.count}
                   </p>
                 </div>
-                <span className="text-xs text-muted-foreground">{activity.time}</span>
+                <span className="text-xs text-muted-foreground whitespace-nowrap">{activity.time}</span>
               </div>
             ))}
           </div>

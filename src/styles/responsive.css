@@ -1,0 +1,26 @@
+/* Mobile-first responsive utilities */
+
+/* Better card layouts on mobile */
+.card {
+  @apply mb-6 md:mb-4;
+}
+
+/* Improved spacing for mobile */
+.mobile-container {
+  @apply px-4 py-6 md:px-6 md:py-8;
+}
+
+/* Fix form layouts on mobile */
+.form-row {
+  @apply flex flex-col md:flex-row gap-4;
+}
+
+/* Mobile spacing fixes */
+.mobile-spaced {
+  @apply space-y-6 md:space-y-4;
+}
+
+/* Better touch targets */
+.mobile-touch {
+  @apply p-3 md:p-2;
+}

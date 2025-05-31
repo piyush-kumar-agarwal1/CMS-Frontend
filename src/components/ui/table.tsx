@@ -2,19 +2,19 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-const Table = React.forwardRef<
-  HTMLTableElement,
-  React.HTMLAttributes<HTMLTableElement>
->(({ className, ...props }, ref) => (
-  <div className="relative w-full overflow-auto">
-    <table
-      ref={ref}
-      className={cn("w-full caption-bottom text-sm", className)}
-      {...props}
-    />
-  </div>
-))
-Table.displayName = "Table"
+export function Table({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLTableElement>) {
+  return (
+    <div className="table-responsive">
+      <table
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...props}
+      />
+    </div>
+  )
+}
 
 const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
@@ -106,7 +106,6 @@ const TableCaption = React.forwardRef<
 TableCaption.displayName = "TableCaption"
 
 export {
-  Table,
   TableHeader,
   TableBody,
   TableFooter,

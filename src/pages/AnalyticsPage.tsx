@@ -199,13 +199,13 @@ const AnalyticsPage: React.FC = () => {
 
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="col-span-1">
+            <Card className="col-span-1 min-h-[350px]">
               <CardHeader>
                 <CardTitle>Customer Growth</CardTitle>
                 <CardDescription>Monthly customer acquisition and revenue</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={window.innerWidth < 768 ? 200 : 300}>
                   <LineChart data={analytics.customerGrowth}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />

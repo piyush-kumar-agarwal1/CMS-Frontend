@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Send, Edit2, Trash2, Eye, Calendar, Users, BarChart3, Megaphone, Mail, MessageSquare, Bell } from 'lucide-react';
+import { Plus, Edit2, Trash2, Send, Megaphone, Calendar, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -238,12 +238,13 @@ const CampaignsPage: React.FC = () => {
 
   const handleSendCampaign = async (campaignId: string) => {
     if (!confirm('Are you sure you want to send this campaign?')) return;
-
+  
     try {
-      await api.post(endpoints.campaignSend(campaignId));
-      fetchCampaigns(); // Refresh to get updated status
+      // Fix: Use the correct endpoint format
+      await api.post(`${endpoints.campaigns}/${campaignId}/send`);
+      fetchCampaigns();
       toast({
-        title: "Success",
+        title: "Success", 
         description: "Campaign sent successfully",
       });
     } catch (error) {
@@ -505,14 +506,18 @@ const CampaignsPage: React.FC = () => {
                     </Button>
                   </div>
                   {(campaign.status === 'draft' || campaign.status === 'scheduled') && (
-                    <Button size="sm" onClick={() => handleSendCampaign(campaign._id)}>
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleSendCampaign(campaign._id)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
                       <Send className="mr-2 h-4 w-4" />
                       Send Now
                     </Button>
                   )}
                   {campaign.status === 'sent' && (
                     <Button variant="outline" size="sm">
-                      <BarChart3 className="mr-2 h-4 w-4" />
+                      <BarChart3 className="h-4 w-4 mr-2" />
                       View Analytics
                     </Button>
                   )}

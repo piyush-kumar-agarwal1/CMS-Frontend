@@ -241,23 +241,23 @@ const ProfilePage = () => {
 
               <div>
                 <h3 className="text-lg font-medium mb-4">Account Statistics</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-blue-600">245</div>
-                      <div className="text-sm text-gray-600">Campaigns Created</div>
+                      <div className="text-xl md:text-2xl font-bold text-blue-600">245</div>
+                      <div className="text-xs md:text-sm text-gray-600">Campaigns Created</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-green-600">1,234</div>
-                      <div className="text-sm text-gray-600">Customers Managed</div>
+                      <div className="text-xl md:text-2xl font-bold text-green-600">1,234</div>
+                      <div className="text-xs md:text-sm text-gray-600">Customers Managed</div>
                     </CardContent>
                   </Card>
                   <Card>
                     <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-purple-600">89%</div>
-                      <div className="text-sm text-gray-600">Success Rate</div>
+                      <div className="text-xl md:text-2xl font-bold text-purple-600">89%</div>
+                      <div className="text-xs md:text-sm text-gray-600">Success Rate</div>
                     </CardContent>
                   </Card>
                 </div>

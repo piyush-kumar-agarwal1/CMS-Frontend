@@ -1,0 +1,40 @@
+/* Mobile-first styles */
+
+/* Improved text readability on mobile */
+.mobile-text {
+  @apply text-base leading-relaxed md:text-sm md:leading-normal;
+}
+
+/* Better card layouts for mobile */
+.mobile-card {
+  @apply p-4 md:p-6;
+}
+
+/* Full-width containers on mobile */
+.mobile-container {
+  @apply w-full px-4 py-6 md:px-6 md:py-8;
+}
+
+/* Improved form layouts on mobile */
+.mobile-form {
+  @apply flex flex-col space-y-6 md:space-y-4;
+}
+
+.mobile-form-row {
+  @apply flex flex-col md:flex-row gap-4 w-full;
+}
+
+/* Better tables on mobile */
+.mobile-table-cell {
+  @apply py-3 px-2 md:py-2 md:px-4;
+}
+
+/* Better spacing for mobile navigation */
+.mobile-nav-item {
+  @apply py-3 px-4 md:py-2 md:px-3;
+}
+
+/* Touch-friendly interactive elements */
+.mobile-touch-target {
+  @apply min-h-[44px] flex items-center;
+}
