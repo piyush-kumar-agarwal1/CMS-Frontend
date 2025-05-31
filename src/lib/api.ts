@@ -39,7 +39,8 @@ export const endpoints = {
   // Auth
   login: '/auth/login',
   register: '/auth/register',
-  profile: '/users/profile', // Updated to use users route
+  googleAuth: '/auth/google',
+  profile: '/users/profile',
   
   // Customers
   customers: '/customers',

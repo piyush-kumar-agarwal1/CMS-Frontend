@@ -1,10 +1,10 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import GoogleAuthProvider from "./components/GoogleAuthProvider.tsx"; // Add this import
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Layout from "./components/layout/Layout";
@@ -17,6 +17,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import AIAssistantPage from "./pages/AIAssistantPage";
 import ProfilePage from "./pages/ProfilePage";
 import SettingsPage from "./pages/SettingsPage";
+import GoogleCallback from "./components/auth/GoogleCallback";
 
 const queryClient = new QueryClient();
 
@@ -103,6 +104,7 @@ const AppRoutes = () => (
           </Layout>
         </ProtectedRoute>
       } />
+      <Route path="/auth/callback" element={<GoogleCallback />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </BrowserRouter>
@@ -110,13 +112,15 @@ const AppRoutes = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AppRoutes />
-      </TooltipProvider>
-    </AuthProvider>
+    <GoogleAuthProvider> {/* Wrap with Google provider */}
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <AppRoutes />
+        </TooltipProvider>
+      </AuthProvider>
+    </GoogleAuthProvider>
   </QueryClientProvider>
 );
 
