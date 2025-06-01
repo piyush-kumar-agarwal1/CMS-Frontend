@@ -4,7 +4,6 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 interface GoogleAuthProviderProps {
   children: React.ReactNode;
 }
-
 const GoogleAuthProvider: React.FC<GoogleAuthProviderProps> = ({ children }) => {
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   
