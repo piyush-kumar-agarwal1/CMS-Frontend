@@ -87,7 +87,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     onError: (error) => {
       console.error('Google login error:', error);
-    }
+    },
+    flow: 'auth-code',
+    ux_mode: 'redirect',
+    redirect_uri: window.location.origin + '/auth/callback'
   });
 
   const loginWithGoogle = () => {

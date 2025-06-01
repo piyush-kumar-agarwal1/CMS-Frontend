@@ -9,6 +9,8 @@ const GoogleCallback: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  // Don't destructure setUser (it's not directly exposed)
+  const auth = useAuth();
   
   useEffect(() => {
     const processAuthCode = async () => {
@@ -25,18 +27,32 @@ const GoogleCallback: React.FC = () => {
         // Exchange code for token through your backend
         const response = await api.post(endpoints.googleCallback, { code });
         
-        // Store token and user data
-        const { token, user } = response.data;
+        // Handle backend response format correctly
+        const { _id, name, email, token, isAdmin, picture } = response.data;
+        
+        // Create user object matching the structure used elsewhere in your app
+        const userData = {
+          id: _id,
+          name,
+          email,
+          role: isAdmin ? 'admin' : 'user',
+          avatar: picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}`
+        };
+        
+        // Store properly formatted user data
         localStorage.setItem('customerconnect_token', token);
-        localStorage.setItem('customerconnect_user', JSON.stringify(user));
+        localStorage.setItem('customerconnect_user', JSON.stringify(userData));
+        
+        // IMPORTANT: Don't call setUser directly, instead force a reload
+        // This will trigger the useEffect in AuthContext that loads user from localStorage
         
         toast({
           title: "Login Successful",
           description: "You've successfully logged in with Google",
         });
         
-        // Redirect to dashboard
-        navigate('/dashboard');
+        // Redirect to dashboard and force page reload to update auth state
+        window.location.href = '/dashboard';
       } catch (err) {
         console.error('Error processing Google callback:', err);
         setError('Failed to authenticate with Google');

@@ -40,6 +40,7 @@ export const endpoints = {
   login: '/auth/login',
   register: '/auth/register',
   googleAuth: '/auth/google',
+  googleCallback: '/auth/google/callback', // Add this line
   profile: '/users/profile',
   
   // Customers
