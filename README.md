@@ -1,7 +1,7 @@
 # 🌟 CustomerConnect CRM
 
 <div align="center">
-   <img alt="CustomerConnect CRM Banner" src="https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" width="80%">
+   <img alt="CustomerConnect CRM Banner" src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=1200&q=80" width="80%">
    <br/>
    <img alt="Made with React" src="https://img.shields.io/badge/Made%20with-React-61DAFB?style=flat-square&logo=react">
    <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-4.9.5-blue?style=flat-square&logo=typescript">
