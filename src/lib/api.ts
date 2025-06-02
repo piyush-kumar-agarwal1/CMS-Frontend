@@ -43,7 +43,7 @@ export const endpoints = {
   googleCallback: '/auth/google/callback', // Add this line
   profile: '/users/profile',
   
-  // Customers
+  // Customer
   customers: '/customers',
   customer: (id: string) => `/customers/${id}`,
   
