@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Send, Megaphone, Calendar, BarChart3 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Send, Megaphone, Calendar, BarChart3, BrainCircuit, Sparkles, Clock, Tag,MessageSquare, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import api, { endpoints } from '@/lib/api';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface Campaign {
   _id: string;
@@ -75,6 +76,12 @@ const CampaignsPage: React.FC = () => {
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [insightsError, setInsightsError] = useState('');
   const [showInsightsDialog, setShowInsightsDialog] = useState(false);
+
+  // New states
+  const [messageIdeas, setMessageIdeas] = useState<string[]>([]);
+  const [idealSendTime, setIdealSendTime] = useState('');
+  const [suggestedTags, setSuggestedTags] = useState<string[]>([]);
+  const [aiLoading, setAiLoading] = useState(false);
 
   // Helper functions - ADD THESE MISSING FUNCTIONS
   const getTypeIcon = (type: string) => {
@@ -314,6 +321,131 @@ const CampaignsPage: React.FC = () => {
     }
   };
 
+  // New function to generate campaign ideas
+  const generateCampaignIdeas = async (objective: string) => {
+    if (!formData.segmentId || !objective) return;
+    
+    setAiLoading(true);
+    try {
+      // Call your backend (we'll create this endpoint)
+      const response = await api.post('/ai/campaign-ideas', {
+        segmentId: formData.segmentId,
+        objective: objective,
+        type: formData.type
+      });
+      
+      setMessageIdeas(response.data.suggestions);
+      setIdealSendTime(response.data.bestSendTime);
+      setSuggestedTags(response.data.tags);
+    } catch (error) {
+      console.error('Error generating campaign ideas:', error);
+      toast({
+        title: "AI Error",
+        description: "Could not generate campaign ideas",
+        variant: "destructive",
+      });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Comment out the applySuggestion function
+  /*
+  const applySuggestion = (idea: string, tags: string[], sendTime: string, closePopover: boolean = false) => {
+    console.log('Applying suggestion:', { idea, tags, sendTime }); // Debug log
+    
+    // Update the form data with all suggestion elements
+    setFormData(prev => {
+      const updated = {
+        ...prev, 
+        message: { 
+          ...prev.message, 
+          content: idea 
+        },
+        // Apply suggested send time if available (convert to datetime-local format if needed)
+        scheduledDate: sendTime && sendTime !== 'No specific time suggested' ? 
+          convertToDateTimeLocal(sendTime) : prev.scheduledDate
+      };
+      console.log('Updated form data:', updated); // Debug log
+      return updated;
+    });
+    
+    // Store the suggested tags for potential use in campaign creation
+    setSuggestedTags(tags);
+    
+    // Visual feedback
+    toast({
+      title: "✨ AI Suggestion Applied",
+      description: `Message content updated: "${idea.substring(0, 50)}${idea.length > 50 ? '...' : ''}"`,
+      duration: 3000,
+    });
+
+    // Close the popover if requested
+    if (closePopover) {
+      const popoverElement = document.querySelector('[data-state="open"][role="dialog"]');
+      if (popoverElement) {
+        const closeButton = popoverElement.querySelector('button[aria-label="Close"]');
+        if (closeButton) {
+          (closeButton as HTMLButtonElement).click();
+        }
+      }
+    }
+    
+    // Highlight the textarea to make the change obvious
+    setTimeout(() => {
+      // Try multiple selectors to find the content textarea
+      const textarea = document.getElementById('content') || 
+                      document.getElementById('edit-content') ||
+                      document.querySelector('textarea[placeholder*="message content"]') ||
+                      document.querySelector('textarea');
+                      
+      if (textarea) {
+        console.log('Found textarea, applying highlight'); // Debug log
+        
+        // Apply highlight effect
+        textarea.classList.add('border-primary', 'ring-2', 'ring-primary', 'border-2');
+        
+        // Scroll it into view
+        textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Focus the textarea to make it more obvious
+        textarea.focus();
+        
+        // Remove highlight after 3 seconds
+        setTimeout(() => {
+          textarea.classList.remove('border-primary', 'ring-2', 'ring-primary', 'border-2');
+        }, 3000);
+      } else {
+        console.log('Textarea not found!'); // Debug log
+      }
+    }, 300); // Increased delay to ensure DOM is updated
+  };
+  */
+
+  // Comment out the convertToDateTimeLocal helper function
+  /*
+  const convertToDateTimeLocal = (aiTime: string): string => {
+    try {
+      // If it's already in the right format, return as-is
+      if (aiTime.includes('T') && aiTime.length >= 16) {
+        return aiTime.substring(0, 16);
+      }
+      
+      // Try to parse common AI response formats like "Tuesday, 10 AM"
+      const now = new Date();
+      const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+      
+      // Default to tomorrow at a reasonable time
+      tomorrow.setHours(10, 0, 0, 0);
+      
+      return tomorrow.toISOString().substring(0, 16);
+    } catch (error) {
+      console.error('Error converting time:', error);
+      return '';
+    }
+  };
+  */
+
   const filteredCampaigns = campaigns.filter(campaign => {
     if (activeTab === 'all') return true;
     return campaign.status === activeTab;
@@ -329,129 +461,337 @@ const CampaignsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Marketing Campaigns</h1>
           <p className="text-muted-foreground">
             Create and manage targeted marketing campaigns for your customer segments
           </p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setIsCreateDialogOpen(true); }}>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Campaign
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle>Create New Campaign</DialogTitle>
-              <DialogDescription>
-                Set up a new marketing campaign for your target segment
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Campaign Name</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="e.g., Black Friday Sale"
-                  />
+        <div className="flex gap-2 w-full sm:w-auto">
+          {/* AI Campaign Ideas Button - NOW AT THE TOP */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="flex-1 sm:flex-auto">
+                <BrainCircuit className="mr-2 h-4 w-4" />
+                Generate AI Ideas
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-4 w-80">
+              <div className="space-y-2">
+                <h4 className="font-semibold">AI-Powered Campaign Ideas</h4>
+                <p className="text-sm text-muted-foreground">
+                  Get creative suggestions for your campaign message, tags, and ideal send time.
+                </p>
+                
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <Label htmlFor="objective">Campaign Objective</Label>
+                    <Input
+                      id="objective"
+                      value={formData.description}
+                      onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                      placeholder="e.g., Increase sales"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ai-segment">Segment</Label>
+                    <Select value={formData.segmentId} onValueChange={(value) => setFormData(prev => ({ ...prev, segmentId: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select segment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {segments.map(segment => (
+                          <SelectItem key={segment._id} value={segment._id}>
+                            {segment.name} ({segment.estimatedCount} customers)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <div>
-                  <Label htmlFor="type">Campaign Type</Label>
-                  <Select value={formData.type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, type: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="email">📧 Email</SelectItem>
-                      <SelectItem value="sms">💬 SMS</SelectItem>
-                      <SelectItem value="push">🔔 Push Notification</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setMessageIdeas([])}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Clear Ideas
+                  </Button>
+                  <Button 
+                    onClick={() => {
+                      generateCampaignIdeas(formData.description);
+                    }}
+                    className="bg-primary text-primary-foreground"
+                  >
+                    {aiLoading ? 'Generating...' : 'Generate Ideas'}
+                  </Button>
                 </div>
-              </div>
 
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <Input
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Brief description of the campaign"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="segment">Target Segment</Label>
-                  <Select value={formData.segmentId} onValueChange={(value) => setFormData(prev => ({ ...prev, segmentId: value }))}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select segment" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {segments.map(segment => (
-                        <SelectItem key={segment._id} value={segment._id}>
-                          {segment.name} ({segment.estimatedCount} customers)
-                        </SelectItem>
+                {messageIdeas.length > 0 && (
+                  <div className="mt-4">
+                    <h5 className="font-semibold">Suggested Message Ideas</h5>
+                    <ul className="list-disc ml-5 space-y-2">
+                      {messageIdeas.map((idea, index) => (
+                        <li key={index} className="flex justify-between items-center">
+                          <span className="text-sm">{idea}</span>
+                          {/* Comment out the Apply button for now */}
+                          {/*
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => applySuggestion(idea, suggestedTags, idealSendTime, true)}
+                          >
+                            <Sparkles className="mr-1 h-4 w-4" />
+                            Apply All
+                          </Button>
+                          */}
+                        </li>
                       ))}
-                    </SelectContent>
-                  </Select>
+                    </ul>
+                  </div>
+                )}
+
+                {idealSendTime && (
+                  <div className="mt-4">
+                    <strong>AI Suggested Send Time:</strong>
+                    <p>{idealSendTime}</p>
+                  </div>
+                )}
+
+                {suggestedTags.length > 0 && (
+                  <div className="mt-4">
+                    <strong>Suggested Tags:</strong>
+                    <div className="flex gap-2 flex-wrap">
+                      {suggestedTags.map((tag, i) => (
+                        <span key={i} className="px-2 py-1 bg-gray-200 rounded">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+          
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => { resetForm(); setIsCreateDialogOpen(true); }}>
+                <Plus className="mr-2 h-4 w-4" />
+                Create Campaign
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>Create New Campaign</DialogTitle>
+                <DialogDescription>
+                  Set up a new marketing campaign for your target segment
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Campaign Name</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="e.g., Black Friday Sale"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="type">Campaign Type</Label>
+                    <Select value={formData.type} onValueChange={(value: any) => setFormData(prev => ({ ...prev, type: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="email">📧 Email</SelectItem>
+                        <SelectItem value="sms">💬 SMS</SelectItem>
+                        <SelectItem value="push">🔔 Push Notification</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
+
                 <div>
-                  <Label htmlFor="scheduledDate">Schedule Date (Optional)</Label>
+                  <Label htmlFor="description">Description</Label>
                   <Input
-                    id="scheduledDate"
-                    type="datetime-local"
-                    value={formData.scheduledDate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, scheduledDate: e.target.value }))}
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Brief description of the campaign"
                   />
                 </div>
-              </div>
 
-              {formData.type === 'email' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="segment">Target Segment</Label>
+                    <Select value={formData.segmentId} onValueChange={(value) => setFormData(prev => ({ ...prev, segmentId: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select segment" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {segments.map(segment => (
+                          <SelectItem key={segment._id} value={segment._id}>
+                            {segment.name} ({segment.estimatedCount} customers)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="scheduledDate">Schedule Date (Optional)</Label>
+                    <Input
+                      id="scheduledDate"
+                      type="datetime-local"
+                      value={formData.scheduledDate}
+                      onChange={(e) => setFormData(prev => ({ ...prev, scheduledDate: e.target.value }))}
+                    />
+                  </div>
+                </div>
+
+                {formData.type === 'email' && (
+                  <div>
+                    <Label htmlFor="subject">Email Subject</Label>
+                    <Input
+                      id="subject"
+                      value={formData.message.subject}
+                      onChange={(e) => setFormData(prev => ({ 
+                        ...prev, 
+                        message: { ...prev.message, subject: e.target.value }
+                      }))}
+                      placeholder="Enter email subject"
+                    />
+                  </div>
+                )}
+
                 <div>
-                  <Label htmlFor="subject">Email Subject</Label>
-                  <Input
-                    id="subject"
-                    value={formData.message.subject}
+                  <Label htmlFor="content">Message Content</Label>
+                  <Textarea
+                    id="content"
+                    rows={6}
+                    value={formData.message.content}
                     onChange={(e) => setFormData(prev => ({ 
                       ...prev, 
-                      message: { ...prev.message, subject: e.target.value }
+                      message: { ...prev.message, content: e.target.value }
                     }))}
-                    placeholder="Enter email subject"
+                    placeholder="Enter your message content here..."
                   />
                 </div>
+              </div>
+
+              {/* After the campaign name and description fields */}
+              {formData.segmentId && (
+                <Card className="bg-slate-50">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between">
+                      <CardTitle className="text-sm flex items-center">
+                        <BrainCircuit className="w-4 h-4 mr-2 text-primary" />
+                        AI Campaign Assistant
+                      </CardTitle>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Generate Ideas
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80">
+                          <div className="space-y-2">
+                            <h4 className="font-medium text-sm">What's your campaign objective?</h4>
+                            <Select onValueChange={(value) => generateCampaignIdeas(value)}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select objective" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="win_back">Win back inactive customers</SelectItem>
+                                <SelectItem value="upsell">Upsell to existing customers</SelectItem>
+                                <SelectItem value="new_product">Introduce a new product</SelectItem>
+                                <SelectItem value="discount">Promote a discount/sale</SelectItem>
+                                <SelectItem value="event">Announce an event</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {aiLoading ? (
+                      <div className="flex justify-center py-4">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {messageIdeas.length > 0 && (
+                          <div className="space-y-2">
+                            <Label className="text-xs flex items-center">
+                              <Sparkles className="w-3 h-3 mr-1 text-primary" />
+                              Message Suggestions:
+                            </Label>
+                            <div className="space-y-1">
+                              {messageIdeas.map((idea, i) => (
+                                <div key={i} className="text-xs p-2 bg-white border rounded-md relative">
+                                  {idea}
+                                  {/* Comment out the Apply button for now */}
+                                  {/*
+                                  <div className="mt-2 flex justify-end">
+                                    <Button
+                                      size="sm"
+                                      variant="secondary"
+                                      className="flex items-center"
+                                      onClick={() => applySuggestion(idea, suggestedTags, idealSendTime)}
+                                    >
+                                      <Sparkles className="h-3 w-3 mr-1" />
+                                      Apply All
+                                    </Button>
+                                  </div>
+                                  */}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {idealSendTime && (
+                          <div>
+                            <Label className="text-xs flex items-center">
+                              <Clock className="w-3 h-3 mr-1 text-primary" />
+                              Best Send Time:
+                            </Label>
+                            <p className="text-xs">{idealSendTime}</p>
+                          </div>
+                        )}
+                        
+                        {suggestedTags.length > 0 && (
+                          <div>
+                            <Label className="text-xs flex items-center">
+                              <Tag className="w-3 h-3 mr-1 text-primary" />
+                              Suggested Tags:
+                            </Label>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {suggestedTags.map((tag, i) => (
+                                <Badge key={i} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               )}
 
-              <div>
-                <Label htmlFor="content">Message Content</Label>
-                <Textarea
-                  id="content"
-                  rows={6}
-                  value={formData.message.content}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    message: { ...prev.message, content: e.target.value }
-                  }))}
-                  placeholder="Enter your message content here..."
-                />
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateCampaign}>Create Campaign</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCreateCampaign}>Create Campaign</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -683,40 +1023,93 @@ const CampaignsPage: React.FC = () => {
 
       {/* AI Insights Dialog */}
       <Dialog open={showInsightsDialog} onOpenChange={setShowInsightsDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>AI Campaign Insights</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <Brain className="h-5 w-5 text-primary" />
+              AI Campaign Insights
+            </DialogTitle>
+            <DialogDescription>
+              AI-powered analysis and recommendations for your campaign
+            </DialogDescription>
           </DialogHeader>
-          {insightsLoading && <div>Loading...</div>}
-          {insightsError && <div className="text-red-500">{insightsError}</div>}
-          {insights && (
-            <div className="space-y-4">
-              <div>
-                <strong>Summary:</strong>
-                <p>{insights.summary}</p>
+          
+          <div className="space-y-6">
+            {insightsLoading && (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                <span className="ml-2 text-sm text-muted-foreground">Analyzing campaign...</span>
               </div>
-              <div>
-                <strong>Message Suggestions:</strong>
-                <ul className="list-disc ml-5">
-                  {insights.suggestions.map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
-                  ))}
-                </ul>
+            )}
+            
+            {insightsError && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div className="text-red-800 font-medium">Error</div>
+                <div className="text-red-600 text-sm">{insightsError}</div>
               </div>
-              <div>
-                <strong>Tags:</strong>
-                <div className="flex gap-2 flex-wrap">
-                  {insights.tags.map((tag: string, i: number) => (
-                    <span key={i} className="px-2 py-1 bg-gray-200 rounded">{tag}</span>
-                  ))}
+            )}
+            
+            {insights && (
+              <div className="space-y-6">
+                {/* Performance Summary */}
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Performance Summary
+                  </h3>
+                  <p className="text-blue-800 text-sm leading-relaxed">{insights.summary}</p>
+                </div>
+
+                {/* Message Suggestions */}
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h3 className="font-semibold text-green-900 mb-3 flex items-center gap-2">
+                    <MessageSquare className="h-4 w-4" />
+                    Message Suggestions
+                  </h3>
+                  <div className="space-y-2">
+                    {insights.suggestions.map((suggestion: string, i: number) => (
+                      <div key={i} className="flex items-start gap-2 p-2 bg-white rounded border">
+                        <div className="flex-shrink-0 w-5 h-5 bg-green-100 rounded-full flex items-center justify-center mt-0.5">
+                          <span className="text-xs font-medium text-green-700">{i + 1}</span>
+                        </div>
+                        <p className="text-green-800 text-sm flex-1">{suggestion}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Campaign Tags */}
+                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <h3 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Recommended Tags
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {insights.tags.map((tag: string, i: number) => (
+                      <span key={i} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Best Send Time */}
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <h3 className="font-semibold text-orange-900 mb-2 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Optimal Send Time
+                  </h3>
+                  <p className="text-orange-800 text-sm">{insights.nextBestTime}</p>
                 </div>
               </div>
-              <div>
-                <strong>Best Send Time:</strong>
-                <p>{insights.nextBestTime}</p>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
+
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={() => setShowInsightsDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
