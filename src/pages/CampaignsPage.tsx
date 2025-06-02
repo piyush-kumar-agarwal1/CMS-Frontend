@@ -18,8 +18,11 @@ interface Campaign {
   description: string;
   type: 'email' | 'sms' | 'push';
   status: 'draft' | 'scheduled' | 'sent' | 'paused';
-  segmentId: string;
-  segmentName?: string;
+  segment: {
+    _id: string;
+    name: string;
+    estimatedCount: number;
+  };
   message: {
     subject?: string;
     content: string;
@@ -463,12 +466,12 @@ const CampaignsPage: React.FC = () => {
                 
                 <CardContent className="space-y-3">
                   <div className="text-sm text-muted-foreground">
-                    <div>Segment: {campaign.segmentName || 'Unknown'}</div>
-                    {campaign.scheduledDate && (
-                      <div className="flex items-center gap-1 mt-1">
-                        <Calendar className="h-3 w-3" />
-                        Scheduled: {new Date(campaign.scheduledDate).toLocaleString()}
-                      </div>
+                  <div>Segment: {campaign.segment?.name || 'Unknown'}</div>
+                  {campaign.scheduledDate && (
+                    <div className="flex items-center gap-1 mt-1">
+                      <Calendar className="h-3 w-3" />
+                      Scheduled: {new Date(campaign.scheduledDate).toLocaleString()}
+                    </div>
                     )}
                     {campaign.sentDate && (
                       <div className="flex items-center gap-1 mt-1">

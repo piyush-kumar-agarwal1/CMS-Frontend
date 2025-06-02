@@ -209,11 +209,11 @@ const AnalyticsPage: React.FC = () => {
                   <LineChart data={analytics.customerGrowth}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
-                    <YAxis yAxisId="left" />
-                    <YAxis yAxisId="right" orientation="right" />
+                    <YAxis yAxisId="left" name="Customers" /> 
+                    <YAxis yAxisId="right" orientation="right" name="Revenue" />
                     <Tooltip />
-                    <Line yAxisId="left" type="monotone" dataKey="customers" stroke="#8884d8" strokeWidth={2} />
-                    <Line yAxisId="right" type="monotone" dataKey="revenue" stroke="#82ca9d" strokeWidth={2} />
+                    <Line yAxisId="left" type="monotone" dataKey="customers" name="Customers" stroke="#8884d8" strokeWidth={2} />
+                    <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="#82ca9d" strokeWidth={2} />
                   </LineChart>
                 </ResponsiveContainer>
               </CardContent>
