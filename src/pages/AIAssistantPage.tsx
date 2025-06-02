@@ -152,9 +152,23 @@ const AIAssistantPage = () => {
                     <div className="flex-1">
                       <div className="font-medium text-sm text-muted-foreground mb-2">AI Assistant</div>
                       <div className="prose prose-sm max-w-none">
-                        {response.split('\n').map((line, index) => (
-                          <p key={index} className="mb-2 last:mb-0">{line}</p>
-                        ))}
+                        {response.split('\n').map((line, index) => {
+                          // Format bullet points
+                          if (line.trim().startsWith('•')) {
+                            return (
+                              <div key={index} className="flex gap-2 mb-1">
+                                <span>•</span>
+                                <span>{line.trim().substring(1)}</span>
+                              </div>
+                            );
+                          }
+                          // Regular paragraph
+                          return line.trim() ? (
+                            <p key={index} className="mb-2 last:mb-0">{line}</p>
+                          ) : (
+                            <div key={index} className="h-2"></div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

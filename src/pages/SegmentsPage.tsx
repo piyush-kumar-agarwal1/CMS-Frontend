@@ -31,7 +31,7 @@ interface Segment {
   name: string;
   description: string;
   criteria: SegmentCriteria;
-  customerCount: number;
+  estimatedCount: number; // Changed from customerCount
   createdAt: string;
   updatedAt: string;
 }
@@ -375,7 +375,7 @@ const SegmentsPage: React.FC = () => {
                 </div>
                 <Badge variant="secondary">
                   <Users className="mr-1 h-3 w-3" />
-                  {segment.customerCount || 0}
+                  {segment.estimatedCount || 0}
                 </Badge>
               </div>
             </CardHeader>

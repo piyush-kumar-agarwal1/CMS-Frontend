@@ -44,7 +44,7 @@ interface Campaign {
 interface Segment {
   _id: string;
   name: string;
-  customerCount: number;
+  estimatedCount: number; // <-- use this!
 }
 
 const CampaignsPage: React.FC = () => {
@@ -70,6 +70,11 @@ const CampaignsPage: React.FC = () => {
     } as { subject?: string; content: string; template?: string; },
     scheduledDate: ''
   });
+
+  const [insights, setInsights] = useState<any | null>(null);
+  const [insightsLoading, setInsightsLoading] = useState(false);
+  const [insightsError, setInsightsError] = useState('');
+  const [showInsightsDialog, setShowInsightsDialog] = useState(false);
 
   // Helper functions - ADD THESE MISSING FUNCTIONS
   const getTypeIcon = (type: string) => {
@@ -295,6 +300,20 @@ const CampaignsPage: React.FC = () => {
     });
   };
 
+  const fetchCampaignInsights = async (campaignId: string) => {
+    setInsightsLoading(true);
+    setInsightsError('');
+    setShowInsightsDialog(true);
+    try {
+      const response = await api.post(`/ai/analyze/${campaignId}`);
+      setInsights(response.data);
+    } catch (error) {
+      setInsightsError('Failed to fetch AI insights.');
+    } finally {
+      setInsightsLoading(false);
+    }
+  };
+
   const filteredCampaigns = campaigns.filter(campaign => {
     if (activeTab === 'all') return true;
     return campaign.status === activeTab;
@@ -378,7 +397,7 @@ const CampaignsPage: React.FC = () => {
                     <SelectContent>
                       {segments.map(segment => (
                         <SelectItem key={segment._id} value={segment._id}>
-                          {segment.name} ({segment.customerCount} customers)
+                          {segment.name} ({segment.estimatedCount} customers)
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -519,9 +538,13 @@ const CampaignsPage: React.FC = () => {
                     </Button>
                   )}
                   {campaign.status === 'sent' && (
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => fetchCampaignInsights(campaign._id)}
+                    >
                       <BarChart3 className="h-4 w-4 mr-2" />
-                      View Analytics
+                      View AI Insights
                     </Button>
                   )}
                 </CardFooter>
@@ -602,7 +625,7 @@ const CampaignsPage: React.FC = () => {
                   <SelectContent>
                     {segments.map(segment => (
                       <SelectItem key={segment._id} value={segment._id}>
-                        {segment.name} ({segment.customerCount} customers)
+                        {segment.name} ({segment.estimatedCount} customers)
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -655,6 +678,45 @@ const CampaignsPage: React.FC = () => {
             </Button>
             <Button onClick={handleUpdateCampaign}>Update Campaign</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Insights Dialog */}
+      <Dialog open={showInsightsDialog} onOpenChange={setShowInsightsDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>AI Campaign Insights</DialogTitle>
+          </DialogHeader>
+          {insightsLoading && <div>Loading...</div>}
+          {insightsError && <div className="text-red-500">{insightsError}</div>}
+          {insights && (
+            <div className="space-y-4">
+              <div>
+                <strong>Summary:</strong>
+                <p>{insights.summary}</p>
+              </div>
+              <div>
+                <strong>Message Suggestions:</strong>
+                <ul className="list-disc ml-5">
+                  {insights.suggestions.map((s: string, i: number) => (
+                    <li key={i}>{s}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <strong>Tags:</strong>
+                <div className="flex gap-2 flex-wrap">
+                  {insights.tags.map((tag: string, i: number) => (
+                    <span key={i} className="px-2 py-1 bg-gray-200 rounded">{tag}</span>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <strong>Best Send Time:</strong>
+                <p>{insights.nextBestTime}</p>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
